@@ -13,6 +13,10 @@ e = math.e
 def sig(t):
 	return 10*np.sin(2*pi*5*t) + 5*np.sin(2*pi*10*t) + np.random.normal(0.0, 1.0, (1, len(t))["array" in str(type(t_a)) or "list" in str(type(t_a))])
 	
+
+def sig2(t):
+	return 10*np.sin(2*pi*5*t) + 5*np.sin(2*pi*10*t)
+	
 #начальное время наблюдения сигнала
 t_0 = 0.0
 #конечное время наблюдения сигнала
@@ -61,29 +65,47 @@ def Sc(sg, t1, t2, ts, f):
 		tmp.append(sum( [ (x[i] + x[i + 1])*0.5*(t[i + 1] - t[i]) for i in range(0, N - 1) ] ))
 	return [ [ abs(z)/(ts*round(N/2)) for z in tmp ], [ cmath.phase(z) for z in tmp ] ]
 
-#че-то не работает пока
-#пытался восстановить сигнал по спектру
-#по формуле из теоремы котельникова
-#кажись на ноль поделил где-то случайно
-qwe = []
-def TK(x, t1, t2, ts):
+def Sinc(x):
+	epsilon = 1e-6
+	if abs(x) < epsilon:
+		return 1
+	else:
+		return math.sin(x)/x
+#восстанавливаем сигнал по теореме котельникова
+#x - отсчёты
+#t1, t2 - начальный и конечнй моменты времени
+#ts - шаг по времени
+#TT - период дискретизации
+def TK(x, t1, t2, ts, TT):
 	tmp = []
+	qwe = []
 	t = np.arange(t1, t2, ts)
-	N = len(t)
+	NN = len(t)
 	K = len(x)
 	for ind, t0 in enumerate(list(t)):
-		qwe = [ x[k]*(math.sin((pi/T)*(t0 - k*T))/((pi/T)*(t0 - k*T)), 1)[abs(t0 - k*T) < 0.00001] for k in range(0, K) ]
+		qwe = []
+		qwe = [ x[k]*Sinc(pi/TT*(float(t0) - float(k)*TT)) for k in range(0, K) ]
 		tmp.append(sum(qwe))
 	return tmp
 	
 x = sig(t_a)
 [a, ph, f] = Sd(x)
-plt.plot(f, a)
-plt.show()
+#plt.figure(1)
+#plt.plot(f, a)
+#plt.show()
 
 fc = np.arange(0.0, 50.0, 0.1)
 [ac, phc] = Sc(sig, 0.0, 5.0, 0.01, fc)
-plt.plot(fc, ac)
-plt.show()
+#plt.figure(2)
+#plt.plot(fc, ac)
+#plt.show()
 
-#xtk = TK(x, 0.0, 1.0, 0.01)
+tt = np.arange(0.0, 1.0, 0.001)
+xx = sig2(tt)
+tt2 = np.arange(0.0, 1.0, 0.01)
+xx2 = sig2(tt2)
+xtk = TK(xx2, 0.0, 1.0, 0.001, 0.01)
+#plt.figure(3)
+#plt.plot(tt, xtk)
+#plt.figure(4)
+#plt.plot(tt, xx)

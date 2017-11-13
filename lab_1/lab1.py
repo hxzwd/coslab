@@ -87,7 +87,21 @@ def TK(x, t1, t2, ts, TT):
 		qwe = [ x[k]*Sinc(pi/TT*(float(t0) - float(k)*TT)) for k in range(0, K) ]
 		tmp.append(sum(qwe))
 	return tmp
-	
+
+#получить дискретный спектр из непрерывного
+#принимает:
+#сам сигнал
+#начальное, конечное время наблюдения и шаг дескритизации сигнала
+#начальную и конечную частоты спектра
+#период дескритизации дискретного спектра
+#возвращает амлитудный и фазовый дискретный спектр сигнала
+def SdFromSc(sg, t1, t2, ts, f1, f2, df):
+	Ad = []
+	Pd = []
+	f = np.arange(f1, f2, df)
+	tmp = Sc(sg, t1, t2, ts, f)
+	return tmp
+
 x = sig(t_a)
 [a, ph, f] = Sd(x)
 #plt.figure(1)
@@ -109,3 +123,10 @@ xtk = TK(xx2, 0.0, 1.0, 0.001, 0.01)
 #plt.plot(tt, xtk)
 #plt.figure(4)
 #plt.plot(tt, xx)
+
+tmp = SdFromSc(sig2, 0.0, 1.0, 0.01, 0, 50.0, 1.0)
+tmp1 = Sd(xx2)
+#plt.figure(5)
+#plt.plot(np.arange(0.0, 50.0, 1.0), tmp[0])
+#plt.figure(6)
+#plt.plot(tmp1[-1], tmp1[0])

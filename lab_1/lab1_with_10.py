@@ -103,6 +103,39 @@ def SdFromSc(sg, t1, t2, ts, f1, f2, df):
 	tmp = Sc(sg, t1, t2, ts, f)
 	return tmp
 
+
+#Получить дискретный спектр из непрерывного
+#Вход: непрерывный спектр
+#Начальная, конечная частоты и шаг дискретизации по частоте
+#Выход: дискретный спектр
+def ScToSd(S_func, f0, f1, df):
+	frs = np.arange(f0, f1, df)
+	return [ S_func(i) for i in frs ]
+
+
+#Получить дискретный сигнал из непрерывного
+#Вход: непрерывный сигнал
+#Начальное, конечное время и шаг дискретизации по времени
+#Выход: дискретный сигнал
+def SigcToSigd(sig_func, t0, t1, dt):
+	ta = np.arange(t0, t1, dt)
+#	return [ sig_func(i) for i in ta ]
+	return sig_func(ta)
+
+#Восстановить сигнал по дискретному спектру
+#A, Ph - амплитудный и фазовый дискретные спектры
+#f - частоты спектра
+#t0, t1, ts - начальное, конечное время и шаг по времени
+def SdToSig(A, Ph, f = [], t0 = 0, t1 = 0, ts = 0):
+	Tmp = [ cmath.rect(v*len(A), Ph[i]) for i, v in enumerate(A) ]	
+	Tmp2 = [ cmath.rect(v*len(A), Ph[i]) for i, v in enumerate(A) ]
+	Tmp2.reverse()
+	Q = Tmp + np.conj(Tmp2).tolist()
+	Q.pop()
+	res = FT1(Q)
+	return res
+
+"""
 x = sig(t_a)
 [a, ph, f] = Sd(x)
 #plt.figure(1)
@@ -133,43 +166,51 @@ tmp1 = Sd(xx2)
 #plt.plot(tmp1[-1], tmp1[0])
 
 
-#Получить дискретный спектр из непрерывного
-#Вход: непрерывный спектр
-#Начальная, конечная частоты и шаг дискретизации по частоте
-#Выход: дискретный спектр
-def ScToSd(S_func, f0, f1, df):
-	frs = np.arange(f0, f1, df)
-	return [ S_func(i) for i in frs ]
-
-
-#Получить дискретный сигнал из непрерывного
-#Вход: непрерывный сигнал
-#Начальное, конечное время и шаг дискретизации по времени
-#Выход: дискретный сигнал
-def SigcToSigd(sig_func, t0, t1, dt):
-	ta = np.arange(t0, t1, dt)
-	return [ sig_func(i) for i in ta ]
-
-#Восстановить сигнал по дискретному спектру
-#A, Ph - амплитудный и фазовый дискретные спектры
-#f - частоты спектра
-#t0, t1, ts - начальное, конечное время и шаг по времени
-def SdToSig(A, Ph, f = [], t0 = 0, t1 = 0, ts = 0):
-	Tmp = [ cmath.rect(v*len(A), Ph[i]) for i, v in enumerate(A) ]	
-	Tmp2 = [ cmath.rect(v*len(A), Ph[i]) for i, v in enumerate(A) ]
-	Tmp2.reverse()
-	Q = Tmp + np.conj(Tmp2).tolist()
-	Q.pop()
-	res = FT1(Q)
-	return res
 
 
 t_a = np.arange(0.01, 5, 0.01)
 x = sig(t_a)
 X = Sd(x)
 x_from_Sd = np.real(SdToSig(X[0], X[1]))
+"""
 #plt.figure(6)
 #plt.plot(t_a, x)
 #plt.figure(7)
 #plt.plot(t_a, x_from_Sd)
 
+
+delta_t = 0.1
+t_begin = 0.1
+t_end = 9.9
+t_begin_restored = 0.01
+t_end_restored = 19.99
+delta_t_restored = 0.01
+time_array = np.arange(t_begin, t_end, delta_t)
+time_array_restored = np.arange(t_begin_restored, t_end_restored, delta_t_restored)
+example_signal_1 = lambda t: np.sum([(1.0/i)*np.sin(2*pi*sqrt(i)*t) for i in range(1, 21)], axis = 0) 
+example_signal_1_d = SigcToSigd(example_signal_1, t_begin, t_end, delta_t)
+example_signal_1_restored = TK(example_signal_1_d, t_begin_restored, t_end_restored, delta_t_restored, delta_t)
+example_signal_1_check_values = example_signal_1(np.arange(t_begin_restored, t_end_restored, delta_t_restored))
+
+
+
+example_signal_2 = lambda t: np.sum([(10.0)*np.sin(2*pi*i*t) for i in range(1, 51) ], axis = 0)
+example_signal_2_d = SigcToSigd(example_signal_2, t_begin, t_end, delta_t)
+example_signal_2_restored = TK(example_signal_2_d, t_begin_restored, t_end_restored, delta_t_restored, delta_t)
+example_signal_2_check_values = example_signal_2(np.arange(t_begin_restored, t_end_restored, delta_t_restored))
+
+
+
+delta_t = 0.01
+t_begin = 0.01
+t_end = 4.99
+time_array = np.arange(t_begin, t_end, delta_t)
+T = delta_t
+example_signal_3 = lambda t: 10*np.sin(2*pi*5*t) + 5*np.sin(2*pi*10*t)
+freq_array = np.arange(0.0, 50.0, 0.1)
+example_signal_3_c_spectrum = Sc(example_signal_3, t_begin, t_end, delta_t, freq_array)
+
+example_signal_3_d = SigcToSigd(example_signal_3, t_begin, t_end, delta_t)
+example_signal_3_d_spectrum = Sd(example_signal_3_d)
+
+#example_signal_3_d_spectrum_from_c = 

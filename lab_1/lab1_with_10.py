@@ -10,6 +10,16 @@ from matplotlib import pyplot as plt
 pi = math.pi
 e = math.e
 
+#Функция Хевисайда
+def Theta(x):
+	if "array" in str(type(x)) or "list" in str(type(x)):
+		return np.array([ (1.0, 0.0)[value < 0] for value in x ])
+	else:
+		if x >= 0:
+			return 1.0
+		else:
+			return 0.0
+
 #тестовый сигнал, две гармоники и нормальный шум, чтобы не так скучно было
 def sig(t):
 	return 10*np.sin(2*pi*5*t) + 5*np.sin(2*pi*10*t) + np.random.normal(0.0, 1.0, (1, len(t))["array" in str(type(t_a)) or "list" in str(type(t_a))])
@@ -135,6 +145,20 @@ def SdToSig(A, Ph, f = [], t0 = 0, t1 = 0, ts = 0):
 	res = FT1(Q)
 	return res
 
+#Получить сигнал из непрерывного спектра
+#Вход: функция спектра сигнала
+#Начальная и конечная частота, шаг дескритизации по частоте и набор временных отсчётов
+#Выход: сиганл соответствующий входному спектру
+def SigFromSc(sfunc, f1, f2, df, t):
+	fa = np.arange(f1, f2, df)
+	N = len(fa)
+	w = [ 2*pi*fr for fr in fa ]
+	tmp = []
+	for t0 in t:
+		x = sfunc(fa)*np.exp(1j*w*t)/(2.0*pi)
+		tmp.append(sum( [ (x[i] + x[i + 1])*0.5*(w[i + 1] - w[i]) for i in range(0, N - 1) ] ))
+	return tmp
+
 """
 x = sig(t_a)
 [a, ph, f] = Sd(x)
@@ -213,4 +237,23 @@ example_signal_3_c_spectrum = Sc(example_signal_3, t_begin, t_end, delta_t, freq
 example_signal_3_d = SigcToSigd(example_signal_3, t_begin, t_end, delta_t)
 example_signal_3_d_spectrum = Sd(example_signal_3_d)
 
-#example_signal_3_d_spectrum_from_c = 
+example_signal_3_d_spectrum_from_c = Sc(example_signal_3, t_begin, t_end, delta_t, example_signal_3_d_spectrum[-1])
+
+
+delta_t = 0.005
+T = delta_t
+example_signal_3_d_ = SigcToSigd(example_signal_3, t_begin, t_end, delta_t)
+example_signal_3_d_spectrum_ = Sd(example_signal_3_d_)
+
+example_signal_3_d_spectrum_from_c_ = Sc(example_signal_3, t_begin, t_end, delta_t, example_signal_3_d_spectrum_[-1])
+
+
+f_begin = -pi
+f_end = pi
+delta_f = 2*pi/1000.0
+freq_array = np.arange(f_begin, f_end, delta_f)
+
+example_spectrum_1 = lambda f: Theta(pi/2 - abs(f))*np.sin(f + pi/2)
+example_spectrum_1_values = example_spectrum_1(freq_array)
+
+example_signal_4 = lambda t: sqrt(2.0/pi)*np.cos(pi*t/2.0)/(1 - t**2)

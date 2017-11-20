@@ -152,12 +152,16 @@ def SdToSig(A, Ph, f = [], t0 = 0, t1 = 0, ts = 0):
 def SigFromSc(sfunc, f1, f2, df, t):
 	fa = np.arange(f1, f2, df)
 	N = len(fa)
-	w = [ 2*pi*fr for fr in fa ]
-	tmp = []
+	w = np.array([ 2*pi*fr for fr in fa ])
+	w = 2*pi*fa
+	TMP = []
+#	print("N: ", N)
 	for t0 in t:
-		x = sfunc(fa)*np.exp(1j*w*t)/(2.0*pi)
-		tmp.append(sum( [ (x[i] + x[i + 1])*0.5*(w[i + 1] - w[i]) for i in range(0, N - 1) ] ))
-	return tmp
+#		print(t)
+		x = [ x0/(2.0*pi) for x0 in sfunc(fa)*np.exp(1j*w*t0) ]
+#		print(t0)
+		TMP.append(sum( [ (x[i] + x[i + 1])*0.5*(w[i + 1] - w[i]) for i in range(0, N - 1) ] ))
+	return TMP
 
 """
 x = sig(t_a)
@@ -257,3 +261,13 @@ example_spectrum_1 = lambda f: Theta(pi/2 - abs(f))*np.sin(f + pi/2)
 example_spectrum_1_values = example_spectrum_1(freq_array)
 
 example_signal_4 = lambda t: sqrt(2.0/pi)*np.cos(pi*t/2.0)/(1 - t**2)
+
+t_begin = 0.0
+t_end = 5.0
+delta_t = 0.01
+T = delta_t
+time_array = np.arange(t_begin, t_end, delta_t)
+
+example_signal_from_spectrum_1 = SigFromSc(example_spectrum_1, f_begin, f_end, delta_f, time_array)
+
+

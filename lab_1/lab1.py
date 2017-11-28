@@ -6,6 +6,7 @@ import sys
 
 from matplotlib import pyplot as plt
 
+
 pi = math.pi
 e = math.e
 
@@ -130,3 +131,29 @@ tmp1 = Sd(xx2)
 #plt.plot(np.arange(0.0, 50.0, 1.0), tmp[0])
 #plt.figure(6)
 #plt.plot(tmp1[-1], tmp1[0])
+
+
+
+
+#Восстановить сигнал по дискретному спектру
+#A, Ph - амплитудный и фазовый дискретные спектры
+#f - частоты спектра
+#t0, t1, ts - начальное, конечное время и шаг по времени
+def SdToSig(A, Ph, f = [], t0 = 0, t1 = 0, ts = 0):
+	Tmp = [ cmath.rect(v*len(A), Ph[i]) for i, v in enumerate(A) ]	
+	Tmp2 = [ cmath.rect(v*len(A), Ph[i]) for i, v in enumerate(A) ]
+	Tmp2.reverse()
+	Q = Tmp + np.conj(Tmp2).tolist()
+	Q.pop()
+	res = FT1(Q)
+	return res
+
+
+t_a = np.arange(0.01, 5, 0.01)
+x = sig(t_a)
+X = Sd(x)
+x_from_Sd = np.real(SdToSig(X[0], X[1]))
+#plt.figure(6)
+#plt.plot(t_a, x)
+#plt.figure(7)
+#plt.plot(t_a, x_from_Sd)

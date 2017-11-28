@@ -1,0 +1,82 @@
+import numpy as np
+from math import *
+import cmath
+import matplotlib.pyplot as plt
+import scipy as sc
+
+InfoMessage = "lab1_2.py"
+
+def Sinc(x):
+	return np.sinc(x/pi)
+
+
+def Rect(x):
+	epsilon = 10e-12
+	if abs(x) > 0.5:
+		return 0.0
+	elif abs(abs(x) - 0.5) <= epsilon:
+		return 0.5
+	elif abs(x) < 0.5:
+		return 1.0
+
+def test():
+	test_x_func = lambda t: \
+	10*sin(2*pi*5*t + pi/2) + 5*sin(2*pi*10*t + 3*pi/4)
+	tb = 0.0
+	te = 10.0
+	dt = 0.01
+	ta = np.arange(tb, te, dt)
+	x = [ test_x_func(t) for t in ta ]
+	X = np.fft.fft(x)
+	A0 = np.abs(X)
+	Phi0 = np.array([ cmath.phase(z) for z in X ])
+	A = A0[ : round(len(A0)/2.0) ]
+	A = A/len(A)
+	Phi = Phi0[ : len(A) ]
+	Freqs = np.array([ freq/(dt*len(X)) for freq in np.arange(0.0, len(A), 1.0) ])
+	W = 2*pi*Freqs
+	return {"A":A, "P":Phi, "F":Freqs, "W":W, "T":ta}'''
+	a = pi/2.0	
+	test_x_func = lambda t: a/pi*Sinc(a*t)
+	test_S_func = lambda w: Rect(w/(2.0*a))
+	wb = -pi
+	we = pi
+	dw = 2*pi/1000
+	wa = np.arange(wb, we, dw)
+	test_S = [ test_S_func(w) for w in wa ]
+	return test_S
+
+
+
+def S_func(w):
+	return cmath.exp(-1j*w)
+
+def x_func(t):
+	epsilon = 1e-6
+	if abs(t - 1.0) <= epsilon:
+		return sqrt(pi/2.0)
+	else:
+		return sqrt(2.0/pi)*sin(pi/2.0*(t - 1.0))/(t - 1.0)
+
+
+print(InfoMessage)
+
+wb = -pi/2
+we = pi/2
+dw = pi/500
+
+ta = np.arange(0.0, 5.0, 0.01)
+wa = np.arange(wb, we, dw)
+ta1 = np.arange(-5.0, 5.0, 0.01)
+
+x = [ x_func(t) for t in ta ]
+x1 = [ x_func(t) for t in ta1 ]
+S = [ S_func(w) for w in wa ]
+
+A = np.real(S)
+Phi = np.imag(S)
+
+N = len(A)
+
+xf_r = lambda t: sum([ A[n]*cos(wa[n]*t + Phi[n]) for n in range(0, N) ])
+
